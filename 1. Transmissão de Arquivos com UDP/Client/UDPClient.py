@@ -1,13 +1,13 @@
 import socket
-from os import listdir
+import os
 
-server_IP = "localhost"  # Substitua pelo IP do servidor
+serverName = "localhost"
 serverPort = 12000
 buffer_size = 1024
 path = "../Files/"
 
 print("Digite o nome do arquivo:")
-for file in listdir(path):
+for file in os.listdir(path):
     print("- " + file)
 filename = input()  # Nome do arquivo que será enviado
 
@@ -15,21 +15,28 @@ filename = input()  # Nome do arquivo que será enviado
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Enviar nome do arquivo primeiro
-client_socket.sendto(filename.encode(), (server_IP, serverPort))
+client_socket.sendto(filename.encode(), (serverName, serverPort))
 
 # Abrir e enviar arquivo
 with open(path+filename, "rb") as file:
     while chunk := file.read(buffer_size):
-        client_socket.sendto(chunk, (server_IP, serverPort))
+        client_socket.sendto(chunk, (serverName, serverPort))
 
 # Indicar fim da transmissão
-client_socket.sendto(b"EOF", (server_IP, serverPort))
+client_socket.sendto(b"EOF", (serverName, serverPort))
+
+# Diretório para salvar o arquivo modificado
+new_path = "../ModifiedFiles/" 
 
 # Receber novo nome e arquivo de volta
-new_path = "../ModifiedFiles/" # Diretório para salvar o arquivo modificado
 new_filename, _ = client_socket.recvfrom(buffer_size)
 new_filename = new_filename.decode()
 
+# Cria diretório de arquivos modificados se não existir
+if not os.path.exists(new_path): 
+    os.mkdir(new_path)
+
+# Receber arquivo modificado
 with open(new_path+new_filename, "wb") as file:
     while True:
         data, _ = client_socket.recvfrom(buffer_size)
