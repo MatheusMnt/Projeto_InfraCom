@@ -38,12 +38,11 @@ with open(path + filename, "wb") as file:
 
             # Decodificar os dados e extrair o número de sequência
             header, msg = data.split(b'|',1)  # Decodifica o pacote
-            seq_num_received = int(header.decode('utf-8').strip("|"))  # Extrai o número de sequência dos dois primeiros caracteres
-            print(seq_num_received)
-            content = msg.decode('utf-8')  # O restante é o conteúdo do pacote
+            seq_num_received = int(header.decode('utf-8'))  # Extrai o número de sequência dos dois primeiros caracteres
+            content = msg  # O restante é o conteúdo do pacote
 
             if seq_num_received == seq_num_expected:
-                file.write(content.encode('utf-8'))  # Escreve o conteúdo no arquivo
+                file.write(content)  # Escreve o conteúdo no arquivo
                 server_socket.sendto(f"ACK{seq_num_expected}".encode('utf-8'), client_address)
                 print(f"Pacote {seq_num_received} recebido corretamente.")
                 seq_num_expected = 1 - seq_num_expected  # Alterna sequência
