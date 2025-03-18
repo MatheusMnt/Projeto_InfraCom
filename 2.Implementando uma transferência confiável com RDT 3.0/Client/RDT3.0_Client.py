@@ -23,21 +23,15 @@ print(f"Arquivo {filename} enviado para o servidor.")
 
 # Envio dos pacotes com Stop-and-Wait ARQ
 seq_num = 0
+
 with open(path + filename, "rb") as file:
     chunk = file.read(buffer_size - 2)  # Subtrair 2 bytes para o número de sequência
     while chunk:
         ack_received = False
+        packet = f"{seq_num}|".encode('utf-8') + chunk  # Adiciona o número de sequência ao pacote
+        client_socket.sendto(packet, (serverName, serverPort))
+        print(f"Pacote {seq_num} enviado.")
         while not ack_received:
-            packet = f"{seq_num}|".encode('utf-8') + chunk  # Adiciona o número de sequência ao pacote
-            
-            # Introduzindo erro aleatório no pacote
-            if random.random() < 0.1:  # 10% de chance de erro
-                print(f"Erro simulado: Pacote {seq_num} corrompido!")
-                packet = packet[::-1]  # Corrompe o pacote invertendo os bytes
-                
-            client_socket.sendto(packet, (serverName, serverPort))
-            print(f"Pacote {seq_num} enviado.")
-            
             try:
                 ack, _ = client_socket.recvfrom(buffer_size)
                 if ack.decode('utf-8') == f"ACK{seq_num}":
@@ -45,12 +39,13 @@ with open(path + filename, "rb") as file:
                     print(f"ACK {seq_num} recebido.")
                     seq_num = 1 - seq_num  # Alterna sequência entre 0 e 1
             except socket.timeout:
+                client_socket.sendto(packet, (serverName, serverPort))
                 print(f"Timeout! Reenviando pacote {seq_num}...")
             except ConnectionResetError:
                 print("Erro: A conexão foi fechada pelo servidor. Tentando reconectar...")
                 break  # Ou você pode tentar reconectar aqui
 
-            chunk = file.read(buffer_size - 2)  # Continua lendo o arquivo
+        chunk = file.read(buffer_size - 2)  # Continua lendo o arquivo
 
 # Indicar fim da transmissão
 client_socket.sendto(b"EOF", (serverName, serverPort))

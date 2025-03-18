@@ -32,10 +32,10 @@ with open(path + filename, "wb") as file:
                 break
 
             # Introduzindo erro aleatório no pacote
-            if random.random() < 0.1:  # 10% de chance de erro
-                print(f"Erro simulado: Pacote perdido ou corrompido!")
+            if random.random() < 0.2:  # 20% de chance de erro
+                print(f"Erro simulado: Pacote perdido!")
                 continue  # Ignora o pacote corrompido
-
+            
             # Decodificar os dados e extrair o número de sequência
             header, msg = data.split(b'|',1)  # Decodifica o pacote
             seq_num_received = int(header.decode('utf-8'))  # Extrai o número de sequência dos dois primeiros caracteres
@@ -48,6 +48,7 @@ with open(path + filename, "wb") as file:
                 seq_num_expected = 1 - seq_num_expected  # Alterna sequência
             else:
                 print(f"Erro de sequência: Esperado {seq_num_expected}, mas recebido {seq_num_received}. Ignorando pacote.")
+    
         except ConnectionResetError:
             print("Erro: A conexão foi fechada pelo cliente. Finalizando...")
             break
