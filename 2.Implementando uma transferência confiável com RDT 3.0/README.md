@@ -1,4 +1,4 @@
-# 1. Implementando uma transferência confiável com RDT 3.0
+# 2. Implementando uma transferência confiável com RDT 3.0
 
 Primeiramente, abra um terminal e rode o arquivo UDPServer.py  
 Em seguida, abra outro terminal e rode o arquivo UDPClient.py
